@@ -1,31 +1,23 @@
-const AuthController = () => import('#controllers/auth_controller')
-import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
+import { HttpContext } from '@adonisjs/core/http'
 
-router.post('/auth/login', [AuthController, 'login'])
-router.post('/auth/register', [AuthController, 'register'])
-router.get('/auth/email/verify/:email/:id', [AuthController, 'verifyEmail']).as('verifyEmail')
+import { middleware } from './kernel.js'
+import authRoutes from './routes/v1/auth.js'
+import reviewerRoutes from './routes/v1/reviewer.js'
 
-router.post('/auth/password/forgot', [AuthController, 'forgotPassword'])
-router
-    .post('/auth/password/reset/:id/:token', [AuthController, 'resetPassword'])
-    .as('resetPassword')
+router.get('/', async ({ response }: HttpContext) => {
+  response.status(200).json({
+    status: 200,
+    message: 'Welcome to UMKM Gebang Putih',
+  })
+})
+  
+router.group(() => {
+  authRoutes()
+  router.group(() => {
+    router.group(() => {
+        reviewerRoutes()
+    }).middleware(middleware.verifiedEmail())
+  }).middleware(middleware.auth({ guards: ['api'] }))
 
-router
-    .group(() => {
-        // routes which require authentication
-        router.get('/auth/user', [AuthController, 'user'])
-        router.post('/auth/logout', [AuthController, 'logout'])
-        router.post('/auth/email/verify/resend', [AuthController, 'resendVerificationEmail'])
-
-        router
-            .group(() => {
-                // routes which require verified email
-            })
-            .use(middleware.verifiedEmail())
-    })
-    .use(
-        middleware.auth({
-            guards: ['api'],
-        })
-    )
+}).prefix('/api/v1')

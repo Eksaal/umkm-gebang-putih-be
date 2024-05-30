@@ -74,7 +74,7 @@ export default class ReviewersController {
   }
 
   public async showByUmkmDataID({ params, response }: HttpContext) {
-    const umkmDataId = params.umkmDataId
+    const umkmDataId = params.id
 
     const reviews = await Reveiwer.query().where('umkmDataId', umkmDataId)
     const totalReviews = reviews.length
