@@ -7,7 +7,7 @@ import path from 'path'
 
 export default class UmkmPicturesController {
   private async saveFile(base64String: string, filePath: string, fileName: string): Promise<void> {
-    const fileBuffer = Buffer.from(base64String, 'base64')
+    const fileBuffer = Buffer.from(base64String.split(',')[1], 'base64') // Split to remove the data URL prefix
     const fullFilePath = path.join(filePath, fileName)
     if (!fs.existsSync(filePath)) {
       fs.mkdirSync(filePath, { recursive: true })
@@ -15,10 +15,11 @@ export default class UmkmPicturesController {
     await fs.promises.writeFile(fullFilePath, fileBuffer)
   }
 
-  private checkBase64(base64String: string): boolean {
-    const regex = /^data:image\/(png|jpg|jpeg);base64,/
-    return regex.test(base64String)
+  private checkBase64(base64String: string): string | null {
+    const match = base64String.match(/^data:image\/(png|jpg|jpeg);base64,/)
+    return match ? match[1] : null
   }
+
   public async index({ response }: HttpContext) {
     const pictures = await UmkmPicture.all()
     return responseUtil.success(response, pictures, 'Pictures retrieved successfully')
@@ -46,13 +47,14 @@ export default class UmkmPicturesController {
         }),
       })
 
-    if (!this.checkBase64(data.picture)) {
+    const fileExtension = this.checkBase64(data.picture)
+    if (!fileExtension) {
       return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
     }
 
     const picture = await UmkmPicture.create({ umkmDataId: data.umkmDataId, picturePath: '' })
     const filePath = `uploads/umkm_pictures/${data.umkmDataId}`
-    const fileName = `${picture.id}.jpg`
+    const fileName = `${data.umkmDataId}_${picture.id}.${fileExtension}`
 
     await this.saveFile(data.picture, filePath, fileName)
     picture.picturePath = path.join(filePath, fileName)
@@ -79,13 +81,14 @@ export default class UmkmPicturesController {
         }),
       })
 
-    if (data.picture && !this.checkBase64(data.picture)) {
-      return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
-    }
-
     if (data.picture) {
+      const fileExtension = this.checkBase64(data.picture)
+      if (!fileExtension) {
+        return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
+      }
+
       const filePath = `uploads/umkm_pictures/${picture.umkmDataId}`
-      const fileName = `${picture.id}.jpg`
+      const fileName = `${picture.umkmDataId}_${picture.id}.${fileExtension}`
 
       await this.saveFile(data.picture, filePath, fileName)
       picture.picturePath = path.join(filePath, fileName)
