@@ -1,16 +1,4 @@
-# AdonisJS v6 API Starter Kit
-
-"AdonisJS v6 API Starter Kit" is a minimal and ready-to-use api starter kit built with AdonisJS v6.
-
-This starter kit is using access tokens and comes with pre-configured features such as user login, registration, email verification, and password management (forgot and reset password). It is designed to help you kickstart your AdonisJS projects, allowing you to focus on what makes your application unique.
-
-This kit is designed to be a backend solution that can be seamlessly integrated with any frontend framework or library of your choice. Whether you're building a web application with React or Vue, or a mobile application with React Native or Flutter, this API starter kit provides the necessary backend functionalities to support your development. Its token-based authentication system and pre-configured features make it a versatile choice for any project, allowing you to focus on crafting the frontend experience while the API handles the backend logic.
-
-Please refer to the "How to use" section for detailed setup instructions.
-
-## Frontend frameworks
-
--   NextJS: https://github.com/sbthemes/nextjs-starter-kit
+# UMKM Gebang Putih
 
 ## How to use
 
