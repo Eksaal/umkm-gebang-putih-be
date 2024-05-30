@@ -115,7 +115,7 @@ export default class UmkmPicturesController {
   }
 
   public async showByUmkmDataId({ params, response }: HttpContext) {
-    const pictures = await UmkmPicture.query().where('umkmDataId', params.umkmDataId)
+    const pictures = await UmkmPicture.query().where('umkmDataId', params.id)
     if (pictures.length === 0) {
       return responseUtil.notFound(response, 'No pictures found for the specified UMKM Data ID')
     }

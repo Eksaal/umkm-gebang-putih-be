@@ -73,7 +73,7 @@ export default class ReviewersController {
     return responseUtil.noContent(response, 'Reviewer deleted successfully')
   }
 
-  public async showByUmkmDataID({ params, response }: HttpContext) {
+  public async showByUmkmDataId({ params, response }: HttpContext) {
     const umkmDataId = params.id
 
     const reviews = await Reveiwer.query().where('umkmDataId', umkmDataId)
