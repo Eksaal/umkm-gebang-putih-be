@@ -74,10 +74,23 @@ export default class ReviewersController {
   }
 
   public async getReviewByUmkmDataId({ params, response }: HttpContext) {
-    const reviews = await Reveiwer.query().where('umkmDataId', params.umkmDataId)
-    if (reviews.length === 0) {
+    const umkmDataId = params.umkmDataId
+    
+    const reviews = await Reveiwer.query().where('umkmDataId', umkmDataId)
+    const totalReviews = reviews.length
+
+    if (totalReviews === 0) {
       return responseUtil.notFound(response, 'No reviews found for the specified UMKM Data ID')
     }
-    return responseUtil.success(response, reviews, 'Reviews retrieved successfully')
+
+    const averageRating = reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+
+    const responseData = {
+      totalReviews,
+      averageRating,
+      reviews,
+    }
+
+    return responseUtil.success(response, responseData, 'Reviews retrieved successfully')
   }
 }
