@@ -6,6 +6,9 @@ export default class UmkmData extends BaseModel {
   declare id: number
 
   @column()
+  declare name: string
+
+  @column()
   declare category: string
 
   @column()
@@ -48,10 +51,10 @@ export default class UmkmData extends BaseModel {
   declare longitude: number
 
   @column()
-  declare food_price: number
+  declare food_price: string
 
   @column()
-  declare drink_price: number  
+  declare drink_price: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
