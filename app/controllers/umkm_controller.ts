@@ -57,6 +57,7 @@ export default class UmkmController {
 
     try {
       const data = await vine.compile(schema).validate(request.all(), { messagesProvider: messages })
+      console.log(data)
 
       const created_data = await UmkmData.create({
         name: data.name,
@@ -78,8 +79,11 @@ export default class UmkmController {
         drinkPrice: data.drink_price,
       })
 
+      console.log("hasil",created_data)
+
       return responseUtil.created(response, created_data)
     } catch (error) {
+      console.log(error)
       return response.badRequest(error.messages)
     }
   }

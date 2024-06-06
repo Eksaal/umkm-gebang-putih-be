@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import UmkmPicture from '#models/umkm_picture'
+import UmkmData from '#models/umkm_data'
 import { responseUtil } from '../../helper/response_util.js'
 import vine, { SimpleMessagesProvider } from '@vinejs/vine'
 import fs from 'fs'
@@ -34,10 +35,10 @@ export default class UmkmPicturesController {
   }
 
   public async store({ request, response }: HttpContext) {
+    // Validate the incoming request to ensure 'picture' field is provided and is a string
     const data = await vine
       .compile(
         vine.object({
-          umkmDataId: vine.number(),
           picture: vine.string(),
         })
       )
@@ -47,19 +48,29 @@ export default class UmkmPicturesController {
         }),
       })
 
+    const umkmDataId = 1; // Replace with your actual logic for getting the umkmDataId
+
+    // Check the base64 string for a valid format and get the file extension
     const fileExtension = this.checkBase64(data.picture)
     if (!fileExtension) {
       return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
     }
 
-    const picture = await UmkmPicture.create({ umkmDataId: data.umkmDataId, picturePath: '' })
-    const filePath = `uploads/umkm_pictures/${data.umkmDataId}`
-    const fileName = `${data.umkmDataId}_${picture.id}.${fileExtension}`
+    // Create a new UmkmPicture record with a temporary picturePath
+    const picture = await UmkmPicture.create({ umkmDataId: umkmDataId, picturePath: '' })
 
+    // Define the file path and name
+    const filePath = `uploads/umkm_pictures/${umkmDataId}`
+    const fileName = `${umkmDataId}_${picture.id}.${fileExtension}`
+
+    // Save the base64 string as a file on the server
     await this.saveFile(data.picture, filePath, fileName)
+
+    // Update the picturePath in the database with the correct path
     picture.picturePath = path.join(filePath, fileName)
     await picture.save()
 
+    // Respond with a success message and the created picture record
     return responseUtil.created(response, picture, 'Picture created successfully')
   }
 

@@ -6,7 +6,6 @@ export default function umkmRoutes(){
         router.get('/', [UmkmController, 'index'])
         router.post('/', [UmkmController,'store'])
         router.get('/:id', [UmkmController,'show'])
-        router.patch('/:id', [UmkmController, 'update'])
         router.delete('/:id', [UmkmController, 'destroy'])
     }).prefix('/umkm')
 }

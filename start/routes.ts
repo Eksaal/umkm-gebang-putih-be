@@ -17,11 +17,9 @@ router.get('/', async ({ response }: HttpContext) => {
 router.group(() => {
   authRoutes()
   router.group(() => {
-    router.group(() => {
-        umkmRoutes()
-        reviewerRoutes()
-        pictureRoutes()
-    }).middleware(middleware.verifiedEmail())
+    umkmRoutes()
+    reviewerRoutes()
+    pictureRoutes()
   }).middleware(middleware.auth({ guards: ['api'] }))
 
 }).prefix('/api/v1')
