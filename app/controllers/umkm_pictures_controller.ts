@@ -1,6 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import UmkmPicture from '#models/umkm_picture'
-import UmkmData from '#models/umkm_data'
 import { responseUtil } from '../../helper/response_util.js'
 import vine, { SimpleMessagesProvider } from '@vinejs/vine'
 import fs from 'fs'
