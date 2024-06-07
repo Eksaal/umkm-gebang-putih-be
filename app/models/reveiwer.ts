@@ -9,9 +9,6 @@ export default class Reveiwer extends BaseModel {
   declare reveiwerId: number
 
   @column()
-  declare value: number
-
-  @column()
   declare name: string
 
   @column()
