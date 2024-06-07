@@ -11,6 +11,9 @@ export default class UmkmPicture extends BaseModel {
   @column()
   declare picturePath: string
 
+  @column()
+  declare menuPicturePath: string
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

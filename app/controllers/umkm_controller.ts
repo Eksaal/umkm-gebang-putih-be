@@ -1,24 +1,35 @@
 import { HttpContext } from '@adonisjs/core/http'
 import UmkmData from '#models/umkm_data'
+import UmkmPicture from '#models/umkm_picture'
 import vine, { SimpleMessagesProvider } from '@vinejs/vine'
 import { responseUtil } from '../../helper/response_util.js'
 
 export default class UmkmController {
-  public async index({ request, response }: HttpContext) {
-    const { name, category } = request.qs()
-    const query = UmkmData.query()
+  public async index({ response }: HttpContext) {
+    try {
+      const umkmDatas = await UmkmData.all()
+      const results = []
 
-    if (name) {
-      query.where('name', 'like', `%${name}%`);
-    }
-    
-    if (category) {
-      query.where('category', 'like', `%${category}%`);
-    }
-    
-    const UmkmDatas = await query.exec();
+      for (const data of umkmDatas) {
+        const pictures = await UmkmPicture.query().where('umkmDataId', data.id)
+        const formattedPictures = pictures.map(picture => picture.picturePath)
+        
+        results.push({
+          id: data.id,
+          name: data.name,
+          category: data.category,
+          address: data.businessAddress,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          pictures: formattedPictures
+        })
+      }
 
-    return responseUtil.success(response, UmkmDatas)
+      return responseUtil.success(response, results, 'Data and pictures retrieved successfully')
+    } catch (error) {
+      console.error(error)
+      return responseUtil.notFound(response, 'An error occurred while retrieving data and pictures')
+    }
   }
 
   public async show({ params, response }: HttpContext) {

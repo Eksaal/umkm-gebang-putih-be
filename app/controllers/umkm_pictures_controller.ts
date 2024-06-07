@@ -34,11 +34,12 @@ export default class UmkmPicturesController {
   }
 
   public async store({ request, response }: HttpContext) {
-    // Validate the incoming request to ensure 'picture' field is provided and is a string
     const data = await vine
       .compile(
         vine.object({
+          id: vine.number(),
           picture: vine.string(),
+          menu_image: vine.string(),
         })
       )
       .validate(request.all(), {
@@ -47,30 +48,27 @@ export default class UmkmPicturesController {
         }),
       })
 
-    const umkmDataId = 1; // Replace with your actual logic for getting the umkmDataId
+    const pictureExtension = this.checkBase64(data.picture)
+    const menuImageExtension = this.checkBase64(data.menu_image)
 
-    // Check the base64 string for a valid format and get the file extension
-    const fileExtension = this.checkBase64(data.picture)
-    if (!fileExtension) {
+    if (!pictureExtension || !menuImageExtension) {
       return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
     }
 
-    // Create a new UmkmPicture record with a temporary picturePath
-    const picture = await UmkmPicture.create({ umkmDataId: umkmDataId, picturePath: '' })
+    const picture = await UmkmPicture.create({ umkmDataId: data.id, picturePath: '', menuPicturePath: '' })
 
-    // Define the file path and name
-    const filePath = `uploads/umkm_pictures/${umkmDataId}`
-    const fileName = `${umkmDataId}_${picture.id}.${fileExtension}`
+    const filePath = `uploads/umkm_pictures/${data.id}`
+    const pictureFileName = `${data.id}_${picture.id}_picture.${pictureExtension}`
+    const menuImageFileName = `${data.id}_${picture.id}_menu.${menuImageExtension}`
 
-    // Save the base64 string as a file on the server
-    await this.saveFile(data.picture, filePath, fileName)
+    await this.saveFile(data.picture, filePath, pictureFileName)
+    await this.saveFile(data.menu_image, filePath, menuImageFileName)
 
-    // Update the picturePath in the database with the correct path
-    picture.picturePath = path.join(filePath, fileName)
+    picture.picturePath = path.join(filePath, pictureFileName)
+    picture.menuPicturePath = path.join(filePath, menuImageFileName)
     await picture.save()
 
-    // Respond with a success message and the created picture record
-    return responseUtil.created(response, picture, 'Picture created successfully')
+    return responseUtil.created(response, picture, 'Pictures created successfully')
   }
 
   public async update({ params, request, response }: HttpContext) {
@@ -83,6 +81,7 @@ export default class UmkmPicturesController {
       .compile(
         vine.object({
           picture: vine.string().optional(),
+          menu_image: vine.string().optional(),
         })
       )
       .validate(request.all(), {
@@ -92,21 +91,34 @@ export default class UmkmPicturesController {
       })
 
     if (data.picture) {
-      const fileExtension = this.checkBase64(data.picture)
-      if (!fileExtension) {
+      const pictureExtension = this.checkBase64(data.picture)
+      if (!pictureExtension) {
         return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
       }
 
       const filePath = `uploads/umkm_pictures/${picture.umkmDataId}`
-      const fileName = `${picture.umkmDataId}_${picture.id}.${fileExtension}`
+      const pictureFileName = `${picture.umkmDataId}_${picture.id}_picture.${pictureExtension}`
 
-      await this.saveFile(data.picture, filePath, fileName)
-      picture.picturePath = path.join(filePath, fileName)
+      await this.saveFile(data.picture, filePath, pictureFileName)
+      picture.picturePath = path.join(filePath, pictureFileName)
+    }
+
+    if (data.menu_image) {
+      const menuImageExtension = this.checkBase64(data.menu_image)
+      if (!menuImageExtension) {
+        return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
+      }
+
+      const filePath = `uploads/umkm_pictures/${picture.umkmDataId}`
+      const menuImageFileName = `${picture.umkmDataId}_${picture.id}_menu.${menuImageExtension}`
+
+      await this.saveFile(data.menu_image, filePath, menuImageFileName)
+      picture.menuPicturePath = path.join(filePath, menuImageFileName)
     }
 
     await picture.save()
 
-    return responseUtil.success(response, picture, 'Picture updated successfully')
+    return responseUtil.success(response, picture, 'Pictures updated successfully')
   }
 
   public async destroy({ params, response }: HttpContext) {
@@ -115,13 +127,19 @@ export default class UmkmPicturesController {
       return responseUtil.notFound(response, 'Picture not found')
     }
 
-    const filePath = picture.picturePath
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath)
+    const pictureFilePath = picture.picturePath
+    const menuImageFilePath = picture.menuPicturePath
+
+    if (fs.existsSync(pictureFilePath)) {
+      fs.unlinkSync(pictureFilePath)
+    }
+
+    if (fs.existsSync(menuImageFilePath)) {
+      fs.unlinkSync(menuImageFilePath)
     }
 
     await picture.delete()
-    return responseUtil.noContent(response, 'Picture deleted successfully')
+    return responseUtil.noContent(response, 'Pictures deleted successfully')
   }
 
   public async showByUmkmDataId({ params, response }: HttpContext) {
