@@ -16,19 +16,16 @@ export default class ReviewersController {
     }
     return responseUtil.success(response, reviewer, 'Reviewer retrieved successfully')
   }
-
-
-  public async store({ request, response, auth }: HttpContext) {
-    const user = auth.user!
+    public async store({ request, response, auth }: HttpContext) {
+      const user = auth.user!
+      const reviewerId = user.id
   
-    const reviewerId = user.id
-  
-    const data = await vine
+      const data = await vine
       .compile(
         vine.object({
           umkmDataId: vine.number(),
           rating: vine.number(),
-          coment : vine.string(),
+          comment: vine.string(),
           name: vine.string(),
           reviewerId: vine.number().optional(),
         })
@@ -39,18 +36,19 @@ export default class ReviewersController {
         }),
       })
   
-    const existingReview = await Reveiwer.query()
-      .where('reviewerId', reviewerId)
-      .where('umkmDataId', data.umkmDataId)
-      .first()
+      const existingReview = await Reveiwer.query()
+        .where('reviewerId', reviewerId)
+        .where('umkmDataId', data.umkmDataId)
+        .first()
   
-    if (existingReview) {
-      return responseUtil.noContent(response, 'You have already reviewed this UMKM')
-    }
-
-    data.reviewerId = reviewerId
-    const reviewer = await Reveiwer.create(data)  
-    return responseUtil.created(response, reviewer, 'Reviewer created successfully')
+      if (existingReview) {
+        return responseUtil.noContent(response, 'You have already reviewed this UMKM')
+      }
+  
+      data.reviewerId = reviewerId
+      const reviewer = await Reveiwer.create(data)
+      
+      return responseUtil.created(response, reviewer, 'Reviewer created successfully')
   }
   
 

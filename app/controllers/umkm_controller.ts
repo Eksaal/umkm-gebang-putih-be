@@ -1,6 +1,7 @@
 import { HttpContext } from '@adonisjs/core/http'
 import UmkmData from '#models/umkm_data'
 import UmkmPicture from '#models/umkm_picture'
+import Reveiwer from '#models/reveiwer'
 import vine, { SimpleMessagesProvider } from '@vinejs/vine'
 import { responseUtil } from '../../helper/response_util.js'
 
@@ -9,11 +10,23 @@ export default class UmkmController {
     try {
       const umkmDatas = await UmkmData.all()
       const results = []
-
+  
       for (const data of umkmDatas) {
         const pictures = await UmkmPicture.query().where('umkmDataId', data.id)
+        const reviews = await Reveiwer.query().where('umkmDataId', data.id)
+  
         const formattedPictures = pictures.map(picture => picture.picturePath)
-        
+  
+        // Calculate total reviews count
+        const totalReviews = reviews.length ? reviews.length : 0
+  
+        // Calculate average rating
+        let totalRating = 0
+        for (const review of reviews) {
+          totalRating += review.rating
+        }
+        const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0
+  
         results.push({
           id: data.id,
           name: data.name,
@@ -21,26 +34,61 @@ export default class UmkmController {
           address: data.businessAddress,
           latitude: data.latitude,
           longitude: data.longitude,
-          pictures: formattedPictures
+          pictures: formattedPictures,
+          totalReviews,
+          averageRating
         })
       }
-
+  
       return responseUtil.success(response, results, 'Data and pictures retrieved successfully')
     } catch (error) {
       console.error(error)
       return responseUtil.notFound(response, 'An error occurred while retrieving data and pictures')
     }
   }
-
   public async show({ params, response }: HttpContext) {
     try {
       const data = await UmkmData.findOrFail(params.id);
       const pictures = await UmkmPicture.query().where('umkmDataId', data.id);
-      let result = {
-        ...data.toJSON(), // Convert model instance to plain object
-        pictures: pictures.map(picture => picture.toJSON()) // Convert each picture to plain object
+  
+      // Retrieve reviews for the UMKM Data
+      const reviews = await Reveiwer.query().where('umkmDataId', data.id);
+      const totalReviews = reviews.length;
+  
+      if (totalReviews === 0) {
+        let result = {
+          ...data.toJSON(),
+          pictures: pictures.map(picture => picture.toJSON())
+        };
+        return responseUtil.success(response, result);
+      }
+  
+      // Calculate rating counts and average rating
+      const ratingCounts: { [key: number]: number } = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
       };
-      return responseUtil.success(response, result);
+  
+      const totalRatingSum = reviews.reduce((sum: any, review: any) => {
+        ratingCounts[review.rating] = (ratingCounts[review.rating] || 0) + 1;
+        return sum + review.rating;
+      }, 0);
+  
+      const averageRating = totalRatingSum / totalReviews;
+  
+      const result = {
+        ...data.toJSON(),
+        pictures: pictures.map(picture => picture.toJSON()),
+        totalReviews,
+        averageRating,
+        ratingCounts,
+        reviews,
+      };
+  
+      return responseUtil.success(response, result, 'UmkmData and reviews retrieved successfully');
     } catch (error) {
       return responseUtil.notFound(response, 'UmkmData not found');
     }
