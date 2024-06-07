@@ -12,12 +12,6 @@ export default class UmkmData extends BaseModel {
   declare category: string
 
   @column()
-  declare productType: string
-
-  @column()
-  declare businessType: string
-
-  @column()
   declare businessAddress: string
 
   @column()
@@ -25,12 +19,6 @@ export default class UmkmData extends BaseModel {
 
   @column()
   declare contactName: string
-
-  @column()
-  declare openingDays: string
-
-  @column()
-  declare specialClosingDays: string
 
   @column()
   declare openingHours: string
@@ -51,10 +39,10 @@ export default class UmkmData extends BaseModel {
   declare longitude: number
 
   @column()
-  declare foodPrice: string
+  declare minPrice: string
 
   @column()
-  declare drinkPrice: string
+  declare maxPrice: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

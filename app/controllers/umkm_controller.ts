@@ -34,21 +34,17 @@ export default class UmkmController {
     const schema = vine.object({
       name: vine.string().trim(),
       category: vine.string().trim(),
-      product_type: vine.string().trim(),
-      business_type: vine.string().trim(),
       business_address: vine.string().trim(),
       business_contact: vine.string().trim(),
       contact_name: vine.string().trim(),
-      opening_days: vine.string().trim(),
-      special_closing_days: vine.string().trim().nullable(),
       opening_hours: vine.string().trim(),
       services: vine.string().trim(),
       payment_methods: vine.string().trim(),
       facilities: vine.string().trim(),
       latitude: vine.number(),
       longitude: vine.number(),
-      food_price: vine.string().trim(),
-      drink_price: vine.string().trim(),
+      min_price: vine.string().trim(),
+      max_price: vine.string().trim(),
     })
 
     const messages = new SimpleMessagesProvider({
@@ -62,26 +58,20 @@ export default class UmkmController {
       const created_data = await UmkmData.create({
         name: data.name,
         category: data.category,
-        productType: data.product_type,
-        businessType: data.business_type,
         businessAddress: data.business_address,
         businessContact: data.business_contact,
         contactName: data.contact_name,
-        openingDays: data.opening_days,
-        specialClosingDays: data.special_closing_days ? data.special_closing_days : undefined,
         openingHours: data.opening_hours,
         services: data.services,
         paymentMethods: data.payment_methods,
         facilities: data.facilities,
         latitude: data.latitude,
         longitude: data.longitude,
-        foodPrice: data.food_price,
-        drinkPrice: data.drink_price,
+        minPrice: data.min_price,
+        maxPrice: data.max_price,
       })
 
-      console.log("hasil",created_data)
-
-      return responseUtil.created(response, created_data)
+      return responseUtil.created(response, created_data.id)
     } catch (error) {
       console.log(error)
       return response.badRequest(error.messages)
