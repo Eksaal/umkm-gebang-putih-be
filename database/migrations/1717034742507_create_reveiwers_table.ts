@@ -14,7 +14,9 @@ export default class extends BaseSchema {
       .inTable('users')
       .onDelete('CASCADE')
       .notNullable()
-
+      table.integer('rating')
+      table.string('name')
+      table.string('coment')
       table
       .integer('umkm_data_id')
       .notNullable()
