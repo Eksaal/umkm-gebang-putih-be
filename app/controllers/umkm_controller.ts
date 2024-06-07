@@ -34,10 +34,15 @@ export default class UmkmController {
 
   public async show({ params, response }: HttpContext) {
     try {
-      const data = await UmkmData.findOrFail(params.id)
-      return responseUtil.success(response, data)
+      const data = await UmkmData.findOrFail(params.id);
+      const pictures = await UmkmPicture.query().where('umkmDataId', data.id);
+      let result = {
+        ...data.toJSON(), // Convert model instance to plain object
+        pictures: pictures.map(picture => picture.toJSON()) // Convert each picture to plain object
+      };
+      return responseUtil.success(response, result);
     } catch (error) {
-      return responseUtil.notFound(response, 'UmkmData not found')
+      return responseUtil.notFound(response, 'UmkmData not found');
     }
   }
 

@@ -32,8 +32,8 @@ router.get('/uploads/*', ({ request, response }) => {
   
 router.group(() => {
   authRoutes()
+  umkmRoutes()
   router.group(() => {
-    umkmRoutes()
     reviewerRoutes()
     pictureRoutes()
   }).middleware(middleware.auth({ guards: ['api'] }))
