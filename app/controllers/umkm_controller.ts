@@ -42,7 +42,6 @@ export default class UmkmController {
   
       return responseUtil.success(response, results, 'Data and pictures retrieved successfully')
     } catch (error) {
-      console.error(error)
       return responseUtil.notFound(response, 'An error occurred while retrieving data and pictures')
     }
   }
@@ -117,7 +116,6 @@ export default class UmkmController {
 
     try {
       const data = await vine.compile(schema).validate(request.all(), { messagesProvider: messages })
-      console.log(data)
 
       const created_data = await UmkmData.create({
         name: data.name,

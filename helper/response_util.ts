@@ -11,7 +11,6 @@ export const responseUtil = {
     return response.status(409).json({ message });
   },
   notFound: (response: Response, message: string = 'Resource not found') => {
-    console.log(message);
     return response.status(404).json({ message });
   },
   noContent: (response: Response, message: string = 'Resource deleted successfully') => {
