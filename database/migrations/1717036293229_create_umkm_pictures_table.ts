@@ -15,6 +15,7 @@ export default class extends BaseSchema {
       .onDelete('CASCADE')
       .notNullable()
       table.string('picture_path')
+      table.string('menu_picture_path')
       table.timestamp('created_at')
       table.timestamp('updated_at')
     })
