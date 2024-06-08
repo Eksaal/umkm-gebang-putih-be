@@ -21,5 +21,7 @@ yarn-error.log
 .idea
 .vscode
 
+.uploads
+
 # Platform specific
 .DS_Store
