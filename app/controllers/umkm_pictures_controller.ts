@@ -4,6 +4,13 @@ import { responseUtil } from '../../helper/response_util.js'
 import vine, { SimpleMessagesProvider } from '@vinejs/vine'
 import fs from 'fs'
 import path from 'path'
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: 'agusdarmawn',
+  api_key: "952397123945689",
+  api_secret: 'IKWsnJ-Rwyrp-dJtPMeVpKl9q2Y'
+});
 
 export default class UmkmPicturesController {
   private async saveFile(base64String: string, filePath: string, fileName: string): Promise<void> {
@@ -25,14 +32,6 @@ export default class UmkmPicturesController {
     return responseUtil.success(response, pictures, 'Pictures retrieved successfully')
   }
 
-  public async show({ params, response }: HttpContext) {
-    const picture = await UmkmPicture.find(params.id)
-    if (!picture) {
-      return responseUtil.notFound(response, 'Picture not found')
-    }
-    return responseUtil.success(response, picture, 'Picture retrieved successfully')
-  }
-
   public async store({ request, response }: HttpContext) {
     const data = await vine
       .compile(
@@ -46,30 +45,38 @@ export default class UmkmPicturesController {
         messagesProvider: new SimpleMessagesProvider({
           'required': 'The {{ field }} field is required.',
         }),
-      })
-
-    const pictureExtension = this.checkBase64(data.picture)
-    const menuImageExtension = this.checkBase64(data.menu_image)
-
+      });
+  
+    const pictureExtension = this.checkBase64(data.picture);
+    const menuImageExtension = this.checkBase64(data.menu_image);
+  
     if (!pictureExtension || !menuImageExtension) {
-      return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.')
+      return responseUtil.conflict(response, 'Invalid picture format. Only jpg and png are allowed.');
     }
-
-    const picture = await UmkmPicture.create({ umkmDataId: data.id, picturePath: '', menuPicturePath: '' })
-
-    const filePath = `uploads/umkm_pictures/${data.id}`
-    const pictureFileName = `${data.id}_${picture.id}_picture.${pictureExtension}`
-    const menuImageFileName = `${data.id}_${picture.id}_menu.${menuImageExtension}`
-
-    await this.saveFile(data.picture, filePath, pictureFileName)
-    await this.saveFile(data.menu_image, filePath, menuImageFileName)
-
-    picture.picturePath = path.join(filePath, pictureFileName)
-    picture.menuPicturePath = path.join(filePath, menuImageFileName)
-    await picture.save()
-
-    return responseUtil.created(response, picture, 'Pictures created successfully')
+  
+    const picture = await UmkmPicture.create({ umkmDataId: data.id, picturePath: '', menuPicturePath: '' });
+  
+    try {
+      const pictureUploadResult = await cloudinary.uploader.upload(`data:image/${pictureExtension};base64,${data.picture}`, {
+        folder: `uploads/umkm_pictures/${data.id}`,
+        public_id: `${data.id}_${picture.id}_picture`
+      });
+  
+      const menuImageUploadResult = await cloudinary.uploader.upload(`data:image/${menuImageExtension};base64,${data.menu_image}`, {
+        folder: `uploads/umkm_pictures/${data.id}`,
+        public_id: `${data.id}_${picture.id}_menu`
+      });
+  
+      picture.picturePath = pictureUploadResult.secure_url;
+      picture.menuPicturePath = menuImageUploadResult.secure_url;
+      await picture.save();
+  
+      return responseUtil.created(response, picture, 'Pictures created successfully');
+    } catch (error) {
+      return responseUtil.notFound(response, 'Error uploading images to Cloudinary');
+    }
   }
+  
 
   public async update({ params, request, response }: HttpContext) {
     const picture = await UmkmPicture.find(params.id)
