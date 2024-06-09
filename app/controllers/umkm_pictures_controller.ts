@@ -5,9 +5,9 @@ import vine, { SimpleMessagesProvider } from '@vinejs/vine';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
-  cloud_name: 'agusdarmawn',
-  api_key: '952397123945689',
-  api_secret: 'IKWsnJ-Rwyrp-dJtPMeVpKl9q2Y'
+  cloud_name: 'dvro8wbpm',
+  api_key: '411818162491434',
+  api_secret: 'spsM11Mi2GuhkWxk1KbV-gdrjbE'
 });
 
 export default class UmkmPicturesController {
