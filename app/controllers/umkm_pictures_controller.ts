@@ -2,13 +2,15 @@ import type { HttpContext } from '@adonisjs/core/http';
 import UmkmPicture from '#models/umkm_picture';
 import { responseUtil } from '../../helper/response_util.js';
 import vine, { SimpleMessagesProvider } from '@vinejs/vine';
+import env from '#start/env'
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
-  cloud_name: 'dvro8wbpm',
-  api_key: '411818162491434',
-  api_secret: 'spsM11Mi2GuhkWxk1KbV-gdrjbE'
+  cloud_name: env.get('CLOUDINARY_CLOUD_NAME'),
+  api_key: env.get('CLOUDINARY_API_KEY'),
+  api_secret: env.get('CLOUDINARY_API_SECRET'),
 });
+
 
 export default class UmkmPicturesController {
 
